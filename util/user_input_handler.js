@@ -46,44 +46,36 @@ function handleElicitAction(request) {
     request.sessionAttributes
   );
 }
-
 /* HANDLE ACTION INPUT */
-// This function handles the user's action input and returns the appropriate response based on the action selected.
 function handleActionResponse(input, request) {
   logDebug("handleActionResponse called", {
     input,
     intent: request?.currentIntent?.name,
-    sessionAttributes: request?.sessionAttributes,
   });
 
-  // Se a ação for "Continue to Agent" ou "End Chat", retorna uma resposta terminal
-  if (ACTIONS.CONTINUE_TO_AGENT === input || ACTIONS.END_CHAT === input) {
-    logDebug("handleActionResponse resolved to terminal response", { input });
-    return formTerminalResponse(
-      request.sessionAttributes,
-      FULFILLMENT_STATES.FULFILLED,
-      request.currentIntent.name,
-      `Received '${input}'`
-    );
-    // Se a ação for "Check Self-Service Options", elicit o slot INTERACTIVE_OPTION com um template de lista
-  } else if (ACTIONS.TEST_INTERACTIVE === input) {
-    logDebug("handleActionResponse resolved to interactive options", { input });
-    let template = createSimpleListPickerFromOptions(
-      "What would you like to do?",
-      Object.values(TEST_INTERACTIVE_OPTIONS)
-    );
-    var outputSessionAttributes = request.sessionAttributes || {};
-    return formElicitSlotWithTemplateResponse(
-      request.currentIntent.name,
-      request.currentIntent.slots,
-      SLOTS.INTERACTIVE_OPTION,
-      template,
-      outputSessionAttributes
-    );
+  let targetIntent = request.currentIntent.name;
+
+  if (input === ACTIONS.BOOK_FLIGHT) {
+    targetIntent = "BookFlight";
+  } else if (input === ACTIONS.FLIGHT_INFORMATION) {
+    targetIntent = "FlightInformation";
+  } else if (input === ACTIONS.MANAGE_BOOKING) {
+    targetIntent = "ManageBooking";
+  } else if (input === ACTIONS.CONTACT_US) {
+    targetIntent = "ContactUs";
   } else {
-    logError("Invalid action received", { input, intent: request?.currentIntent?.name });
+    logError("Invalid action received", { input });
     throw new Error(`Invalid action recieved: ${input}`);
   }
+
+  // Finaliza o Lex e devolve a intenção correta para o Connect fazer o Transfer to Flow
+  logDebug("handleActionResponse resolved to terminal response", { input, targetIntent });
+  return formTerminalResponse(
+    request.sessionAttributes,
+    FULFILLMENT_STATES.FULFILLED,
+    targetIntent,
+    `Transferring to ${targetIntent} flow...`
+  );
 }
 
 /* HANDLE INTERACTIVE OPTION INPUT */
