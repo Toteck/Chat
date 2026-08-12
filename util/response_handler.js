@@ -6,6 +6,27 @@ function logDebug(message, details) {
   console.log(LOGGER_PREFIX, message, details || {});
 }
 
+/* Muda para outra intenção e deixa o Lex continuar (elicit slots) */
+function formSwitchIntentResponse(sessionAttributes = {}, targetIntentName, slots = {}) {
+  const response = {
+    sessionState: {                          // ← OBRIGATÓRIO
+      sessionAttributes: sessionAttributes || {},
+      dialogAction: {
+        type: "Delegate"
+      },
+      intent: {
+        name: targetIntentName,
+        state: "InProgress",
+        slots: slots || {},
+        confirmationState: "None"
+      }
+    }
+  };
+
+  console.log("[response_handler] formSwitchIntentResponse generated", JSON.stringify(response, null, 2));
+  return response;
+}
+
 /* CREATE A RESPONSE BASED ON INITIAL USER UTTERANCE */
 function formElicitSlotWithTemplateResponse(
   intentName,
@@ -110,4 +131,5 @@ module.exports = {
   formElicitSlotWithTemplateResponse,
   formTerminalResponse,
   formElicitIntentResponse,
+  formSwitchIntentResponse
 };
