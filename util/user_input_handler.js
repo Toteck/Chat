@@ -4,6 +4,7 @@ const {
   formElicitSlotWithTemplateResponse,
   formTerminalResponse,
   formElicitIntentResponse,
+  formSwitchIntentResponse,
 } = require("./response_handler");
 
 const {
@@ -50,10 +51,10 @@ function handleElicitAction(request) {
 function handleActionResponse(input, request) {
   logDebug("handleActionResponse called", {
     input,
-    intent: request?.currentIntent?.name,
+    intent: request?.sessionState?.intent?.name
   });
 
-  let targetIntent = request.currentIntent.name;
+  let targetIntent = null;
 
   if (input === ACTIONS.BOOK_FLIGHT) {
     targetIntent = "BookFlight";
@@ -68,13 +69,15 @@ function handleActionResponse(input, request) {
     throw new Error(`Invalid action recieved: ${input}`);
   }
 
-  // Finaliza o Lex e devolve a intenção correta para o Connect fazer o Transfer to Flow
-  logDebug("handleActionResponse resolved to terminal response", { input, targetIntent });
-  return formTerminalResponse(
-    request.sessionAttributes,
-    FULFILLMENT_STATES.FULFILLED,
+  // Em vez de fechar, troca a intenção e deixa o Lex continuar (elicit slots)
+  logDebug("Switching to target intent", { input, targetIntent });
+  const sessionAttributes =
+    request.sessionState?.sessionAttributes ||
+    request.sessionAttributes ||
+    {};
+  return formSwitchIntentResponse(
+    sessionAttributes,
     targetIntent,
-    `Transferring to ${targetIntent} flow...`
   );
 }
 
