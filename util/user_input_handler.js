@@ -31,20 +31,26 @@ function logError(message, details) {
 function handleElicitAction(request) {
   logDebug("handleElicitAction called", {
     intent: request?.currentIntent?.name,
-    sessionAttributes: request?.sessionAttributes,
+    sessionAttributes: request?.sessionState?.sessionAttributes,
   });
 
-  let template = createSimpleListPickerFromOptions(
-    "How may I assist you?",
-    Object.values(ACTIONS)
-  );
+  let template;
 
-  return formElicitSlotWithTemplateResponse(
+  if (request.currentIntent.name === "ConfirmationOrder") {
+    template = createQuickReply("Do you want confirm?", ["Yes", "No"])
+  } else if (request.currentIntent.name === "Help") {
+    template = createSimpleListPickerFromOptions(
+      "How may I assist you?",
+      Object.values(ACTIONS)
+    );
+  }
+
+  return formElicitSlotWidthTemplateResponse(
     request.currentIntent.name,
     request.currentIntent.slots,
     SLOTS.INTERACTIVE_OPTION,
     template,
-    request.sessionAttributes
+    request.sessionState?.sessionAttributes
   );
 }
 /* HANDLE ACTION INPUT */
@@ -64,6 +70,8 @@ function handleActionResponse(input, request) {
     targetIntent = "ManageBooking";
   } else if (input === ACTIONS.CONTACT_US) {
     targetIntent = "ContactUs";
+  } else if (input === ACTIONS.CONFIRMATION_ORDER) {
+    targetIntent = "ConfirmationOrder";
   } else {
     logError("Invalid action received", { input });
     throw new Error(`Invalid action recieved: ${input}`);
@@ -71,10 +79,7 @@ function handleActionResponse(input, request) {
 
   // Em vez de fechar, troca a intenção e deixa o Lex continuar (elicit slots)
   logDebug("Switching to target intent", { input, targetIntent });
-  const sessionAttributes =
-    request.sessionState?.sessionAttributes ||
-    request.sessionAttributes ||
-    {};
+  const sessionAttributes = request.sessionState?.sessionAttributes || {};
   return formSwitchIntentResponse(
     sessionAttributes,
     targetIntent,
@@ -86,7 +91,7 @@ function handleInteractiveOptionResponse(input, request) {
   logDebug("handleInteractiveOptionResponse called", {
     input,
     intent: request?.currentIntent?.name,
-    sessionAttributes: request?.sessionAttributes,
+    sessionAttributes: request?.sessionState?.sessionAttributes,
   });
 
   let interactionOptionKey = Object.entries(TEST_INTERACTIVE_OPTIONS).filter(
@@ -107,7 +112,7 @@ function handleInteractiveOptionResponse(input, request) {
     request.currentIntent.slots,
     elicitSlot,
     template,
-    request.sessionAttributes
+    request.sessionState?.sessionAttributes
   );
 }
 
@@ -116,15 +121,38 @@ function handleOtherResponse(input, request) {
   logDebug("handleOtherResponse called", {
     input,
     intent: request?.currentIntent?.name,
-    sessionAttributes: request?.sessionAttributes,
+    sessionAttributes: request?.sessionState?.sessionAttributes,
   });
 
   let message = `Received '${input}'\n\nPlease send 'help' to start again`;
   return formElicitIntentResponse(
-    request.sessionAttributes,
+    request.sessionState?.sessionAttributes,
     request.currentIntent.name,
     message
   );
+}
+
+/* CREATE A QUICK REPLY */
+function createQuickReply(title, options) {
+  logDebug("createQuickReply called", {
+    title,
+    optionCount: Array.isArray(options) ? options.length : 0,
+  });
+
+  return {
+    templateType: TEMPLATE_TYPES.QUICK_REPLY,
+    version: "1.0",
+    data: {
+      "replyMessage": {
+        "title": "Thanks for your order!"
+      },
+      content: {
+        title: title,
+        subtitle: "Tap to select option",
+        elements: options.map((option) => ({ title: option })),
+      },
+    },
+  };
 }
 
 /* CREATE A LIST PICKER */

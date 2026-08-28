@@ -51,6 +51,8 @@ const ACTIONS = {
   FLIGHT_INFORMATION: "Flight information",
   MANAGE_BOOKING: "Manage Booking",
   CONTACT_US: "Contact Us",
+  CONFIRMATION_ORDER: "Do you want confirm?",
+  CHECK_SELF_SERVICE_OPTIONS: "Check Self-Service Options",
 };
 
 /*SELF-SERVICE OPTIONS WHEN USER SELECTS "CHECK SELF-SERVICE OPTIONS" AS AN ACTION*/
@@ -160,18 +162,15 @@ const TEST_INTERACTIVE_OPTIONS_TEMPLATES = {
     version: "1.0",
     data: {
       content: {
-        title: "How was your experience?",
+        title: "Can you confirm your ticket details?",
         subtitle: "Tap to select option",
         buttons: [
           {
-            text: "Good",
+            text: "Yes",
           },
           {
-            text: "Bad",
-          },
-          {
-            text: "Neutral",
-          },
+            text: "No",
+          }
         ],
       },
     },

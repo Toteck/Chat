@@ -36,15 +36,19 @@ function handleRequest(request) {
   request.currentIntent = request.interpretations[0].intent;
   let current_intent = request.currentIntent.name;
 
-  // 1. Se o input for uma das ações principais (ex: "Book a Flight")
-  if (Object.values(ACTIONS).includes(input)) {
-    console.log("Ação principal detectada, chamando handleActionResponse");
-    return handleActionResponse(input, request);
-  }
-  // 2. Se o input for um pedido de ajuda ou o início da intenção Help
-  else if (current_intent === 'Help' || input.toLowerCase() === 'help') {
-    console.log("Pedido de ajuda detectado, chamando handleElicitAction");
+  // Se o input for um pedido de ajuda ou o início da intenção Help
+  if (current_intent === 'Help' || input.toLowerCase() === 'help') {
+    console.log("Ação principal detectada, chamando handleElicitAction");
     return handleElicitAction(request);
+  }
+  if (current_intent === 'ConfirmationOrder') {
+    console.log("Ação principal detectada, chamando handleElicitAction");
+    return handleElicitAction(request);
+  }
+  // Se o input for uma das ações principais (ex: "Book a Flight")
+  else if (Object.values(ACTIONS).includes(input)) {
+    console.log("Pedido de ajuda detectado, chamando handleActionResponse");
+    return handleActionResponse(input, request);
   }
   // 3. Fallback para outras respostas
   else {

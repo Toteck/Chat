@@ -9,7 +9,7 @@ function logDebug(message, details) {
 /* Muda para outra intenção e deixa o Lex continuar (elicit slots) */
 function formSwitchIntentResponse(sessionAttributes = {}, targetIntentName, slots = {}) {
   const response = {
-    sessionState: {                          // ← OBRIGATÓRIO
+    sessionState: {
       sessionAttributes: sessionAttributes || {},
       dialogAction: {
         type: "Delegate"
