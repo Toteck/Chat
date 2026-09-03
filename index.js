@@ -32,27 +32,112 @@ exports.handler = async (event, context) => {
 
 /* PROCESS INBOUND MESSAGE */
 function handleRequest(request) {
-  let input = request.inputTranscript;
+  const input = (request.inputTranscript || "").trim();
   request.currentIntent = request.interpretations[0].intent;
-  let current_intent = request.currentIntent.name;
+  const current_intent = request.currentIntent.name;
+  const current_state = request.sessionState?.intent?.state || null;
+
+  console.log()
+
+  const slots =
+    request.sessionState?.intent?.slots ||
+    request.currentIntent.slots ||
+    {};
+
+  const interactiveValue =
+    slots.interactiveOption?.value?.interpretedValue ||
+    slots.interactiveOption?.value?.originalValue ||
+    null;
+
+  const chosenAction = interactiveValue || input;
+
+  // Ações do menu (Book a Flight, etc.)
+  if (Object.values(ACTIONS).includes(chosenAction)) {
+    console.log("Ação do menu detectada, chamando handleActionResponse");
+    return handleActionResponse(input, request);
+  }
+  if (
+    request.invocationSource === "FulfillmentCodeHook" ||
+    (current_intent === "BookFlight" && current_state === "ReadyForFulfillment")
+  ) {
+    console.log("BookFlight ReadyForFulfillment → pedindo confirmação");
+
+    const sessionAttributes = request.sessionState?.sessionAttributes || {};
+    const intentSlots = request.sessionState?.intent?.slots || {};
+
+    const fromCity =
+      intentSlots.FromCity?.value?.interpretedValue || "N/A";
+    const toCity =
+      intentSlots.ToCity?.value?.interpretedValue || "N/A";
+    const departureDate =
+      intentSlots.DepartureDate?.value?.interpretedValue || "N/A";
+    const passengers =
+      intentSlots.NumberPassengers?.value?.interpretedValue || "N/A";
+
+    const summary =
+      `From: ${fromCity}\nTo: ${toCity}\nDate: ${departureDate}\nPassengers: ${passengers}`;
+
+    const template = {
+      templateType: "QuickReply",
+      version: "1.0",
+      data: {
+        content: {
+          title: `Please confirm your flight details:\n\n${summary}`,
+          elements: [{ title: "Yes" }, { title: "No" }],
+        },
+      },
+    };
+
+    // use o nome EXATO do slot no Lex
+    const slotToElicit = "confirmChoice";
+
+    return {
+      sessionState: {
+        sessionAttributes,
+        dialogAction: {
+          type: "ElicitSlot",
+          slotToElicit,
+        },
+        intent: {
+          name: "BookFlight",
+          state: "InProgress",
+          slots: intentSlots,
+          confirmationState: "None",
+        },
+      },
+      messages: [
+        {
+          contentType: "CustomPayload",
+          content: JSON.stringify(template),
+        },
+      ],
+    };
+  }
+
+  if (current_intent === "BookFlight" && confirm) {
+    // exemplo: depois que confirmChoice veio preenchido
+    const confirm =
+      slots.confirmChoice?.value?.interpretedValue || input;
+
+    const normalized = String(confirm).toLowerCase();
+    const ok = ["yes", "yeah", "yep", "confirm"].includes(normalized);
+
+    return formTerminalResponse(
+      request.sessionState?.sessionAttributes || {},
+      ok ? "Fulfilled" : "Failed",
+      "BookFlight",
+      ok ? "Booking confirmed." : "Booking cancelled."
+    );
+  }
 
   // Se o input for um pedido de ajuda ou o início da intenção Help
   if (current_intent === 'Help' || input.toLowerCase() === 'help') {
-    console.log("Ação principal detectada, chamando handleElicitAction");
+    console.log("Ação Help detectada");
     return handleElicitAction(request);
   }
-  if (current_intent === 'ConfirmationOrder') {
-    console.log("Ação principal detectada, chamando handleElicitAction");
-    return handleElicitAction(request);
-  }
-  // Se o input for uma das ações principais (ex: "Book a Flight")
-  else if (Object.values(ACTIONS).includes(input)) {
-    console.log("Pedido de ajuda detectado, chamando handleActionResponse");
-    return handleActionResponse(input, request);
-  }
-  // 3. Fallback para outras respostas
-  else {
-    console.log("[Handling other response]");
-    return handleOtherResponse(input, request);
-  }
+
+  // Fallback para outras respostas
+  console.log("[Handling other response]");
+  return handleOtherResponse(input, request);
+
 }

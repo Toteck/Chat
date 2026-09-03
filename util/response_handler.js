@@ -88,6 +88,10 @@ function formTerminalResponse(sessionAttributes, fulfillmentState, intent, messa
     ]
   };
 
+  if (messageText) {
+    response.messages = [{ contentType: "PlainText", content: messageText}]
+  }
+
   logDebug("formTerminalResponse generated", {
     intent,
     fulfillmentState,

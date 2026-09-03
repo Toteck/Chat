@@ -48,11 +48,9 @@ const DEPARTMENT_SLOT = {
 /*ACTIONS THAT A USER CAN TAKE */
 const ACTIONS = {
   BOOK_FLIGHT: "Book a Flight",
-  FLIGHT_INFORMATION: "Flight information",
   MANAGE_BOOKING: "Manage Booking",
   CONTACT_US: "Contact Us",
-  CONFIRMATION_ORDER: "Do you want confirm?",
-  CHECK_SELF_SERVICE_OPTIONS: "Check Self-Service Options",
+  FLIGHT_INFORMATION: "Flight Information",
 };
 
 /*SELF-SERVICE OPTIONS WHEN USER SELECTS "CHECK SELF-SERVICE OPTIONS" AS AN ACTION*/

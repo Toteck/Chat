@@ -27,6 +27,7 @@ function logError(message, details) {
   console.error(LOGGER_PREFIX, message, details || {});
 }
 
+
 /* HANDLE INITIAL UTTERANCE INPUT */
 function handleElicitAction(request) {
   logDebug("handleElicitAction called", {
@@ -34,18 +35,12 @@ function handleElicitAction(request) {
     sessionAttributes: request?.sessionState?.sessionAttributes,
   });
 
-  let template;
+  const template = createSimpleListPickerFromOptions(
+    "How may I assist you?",
+    Object.values(ACTIONS)
+  );
 
-  if (request.currentIntent.name === "ConfirmationOrder") {
-    template = createQuickReply("Do you want confirm?", ["Yes", "No"])
-  } else if (request.currentIntent.name === "Help") {
-    template = createSimpleListPickerFromOptions(
-      "How may I assist you?",
-      Object.values(ACTIONS)
-    );
-  }
-
-  return formElicitSlotWidthTemplateResponse(
+  return formElicitSlotWithTemplateResponse(
     request.currentIntent.name,
     request.currentIntent.slots,
     SLOTS.INTERACTIVE_OPTION,
@@ -53,6 +48,8 @@ function handleElicitAction(request) {
     request.sessionState?.sessionAttributes
   );
 }
+
+
 /* HANDLE ACTION INPUT */
 function handleActionResponse(input, request) {
   logDebug("handleActionResponse called", {
@@ -70,8 +67,6 @@ function handleActionResponse(input, request) {
     targetIntent = "ManageBooking";
   } else if (input === ACTIONS.CONTACT_US) {
     targetIntent = "ContactUs";
-  } else if (input === ACTIONS.CONFIRMATION_ORDER) {
-    targetIntent = "ConfirmationOrder";
   } else {
     logError("Invalid action received", { input });
     throw new Error(`Invalid action recieved: ${input}`);
@@ -134,22 +129,14 @@ function handleOtherResponse(input, request) {
 
 /* CREATE A QUICK REPLY */
 function createQuickReply(title, options) {
-  logDebug("createQuickReply called", {
-    title,
-    optionCount: Array.isArray(options) ? options.length : 0,
-  });
-
   return {
     templateType: TEMPLATE_TYPES.QUICK_REPLY,
     version: "1.0",
     data: {
-      "replyMessage": {
-        "title": "Thanks for your order!"
-      },
       content: {
         title: title,
         subtitle: "Tap to select option",
-        elements: options.map((option) => ({ title: option })),
+        buttons: options.map((option) => ({ text: option })),
       },
     },
   };
@@ -184,4 +171,5 @@ module.exports = {
   handleActionResponse,
   handleInteractiveOptionResponse,
   handleOtherResponse,
+  createQuickReply
 };
