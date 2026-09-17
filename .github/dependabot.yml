@@ -2,8 +2,7 @@ version: 2
 updates:
   # Configuração para pacotes NPM / Yarn
   - package-ecosystem: "npm"
-  directory: "/"
-  schedule:
-    interval: "weekly" # Pode ser daily, weekly ou monthly
-
-  target-branch: "development"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "development"
