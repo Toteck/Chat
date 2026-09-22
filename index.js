@@ -195,7 +195,7 @@ function handleRequest(request) {
           slotToElicit,
         },
         intent: {
-          name: "FlightPlan",
+          name: "SelectFlight",
           state: "InProgress",
           slots: intentSlots,
           confirmationState: "None",
@@ -251,17 +251,16 @@ function handleRequest(request) {
               "version": "1.0",
               "data": {
                 "content": {
-                  "title": "California",
+                  "title": "Saver",
                   "subtitle": "Tap to select option",
                   "elements": [
                     {
                       "title": "Book flights"
                     },
                     {
-                      "title": "Book hotels"
-                    },
-                    {
-                      "title": "Talk to agent"
+                      "title": "Learn more",
+                      "type": "hyperlink",
+                      "url": "https://www.voeazul.com.br/br/pt/home"
                     }
                   ]
                 }
@@ -273,17 +272,37 @@ function handleRequest(request) {
               "version": "1.0",
               "data": {
                 "content": {
-                  "title": "New York",
+                  "title": "Flexi plus",
                   "subtitle": "Tap to select option",
                   "elements": [
                     {
                       "title": "Book flights"
                     },
                     {
-                      "title": "Book hotels"
+                      "title": "Learn more",
+                      "type": "hyperlink",
+                      "url": "https://www.voeazul.com.br/br/pt/home"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "templateIdentifier": "template2",
+              "templateType": "Panel",
+              "version": "1.0",
+              "data": {
+                "content": {
+                  "title": "Super 6E",
+                  "subtitle": "Tap to select option",
+                  "elements": [
+                    {
+                      "title": "Book flights"
                     },
                     {
-                      "title": "Talk to agent"
+                      "title": "Learn more",
+                      "type": "hyperlink",
+                      "url": "https://www.voeazul.com.br/br/pt/home"
                     }
                   ]
                 }
