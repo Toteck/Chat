@@ -116,6 +116,11 @@ function handleRequest(request) {
     const sessionAttributes = request.sessionState?.sessionAttributes || {};
     const intentSlots = request.sessionState?.intent?.slots || {};
 
+    // 1. EXTRAÇÃO DOS ATRIBUTOS DE CONTATO/SESSÃO
+    const fromCity = sessionAttributes.FromCity || "Origem não informada";
+    const toCity = sessionAttributes.ToCity || "Destino não informado";
+    console.log(`FromCity: ${fromCity}, ToCity: ${toCity}`);
+
     if (fSelectValue) {
       return {
         sessionState: {
@@ -132,12 +137,12 @@ function handleRequest(request) {
         messages: [
           {
             contentType: "PlainText",
-            content: `Opção de vôo ${fSelectValue} selecionada com sucesso!`
+            content: `Flight option ${fSelectValue} successfully selected!`
           }
         ]
       }
     }
-    const title = "Please select your flight option:";
+    const title = "Flights " + fromCity + " - " + toCity;
 
     const template = {
       templateType: "ListPicker",
@@ -152,25 +157,25 @@ function handleRequest(request) {
           imageDescription: "Select any of the option",
           elements: [
             {
-              title: "Select 1",
+              title: "Option 001",
               subtitle: "13:40 - 21:40, ✈️ 6E919, $65",
               imageType: "URL",
               imageData: "https://readthemanual3.s3.us-east-1.amazonaws.com/aviao.jpg"
             },
             {
-              title: "Select 2",
+              title: "Option 002",
               subtitle: "06:10 - 11:40, ✈️ 6E920, $45",
               imageType: "URL",
               imageData: "https://readthemanual3.s3.us-east-1.amazonaws.com/aviao.jpg",
             },
             {
-              title: "Select 3",
+              title: "Option 003",
               subtitle: "09:00 - 15:00, ✈️ 6E921, $55",
               imageType: "URL",
               imageData: "https://readthemanual3.s3.us-east-1.amazonaws.com/aviao.jpg",
             },
             {
-              title: "Select 4",
+              title: "Option 004",
               subtitle: "15:00 - 21:00, ✈️ 6E922, $75",
               imageType: "URL",
               imageData: "https://readthemanual3.s3.us-east-1.amazonaws.com/aviao.jpg",
@@ -190,7 +195,7 @@ function handleRequest(request) {
           slotToElicit,
         },
         intent: {
-          name: "SelectFlight",
+          name: "FlightPlan",
           state: "InProgress",
           slots: intentSlots,
           confirmationState: "None",
@@ -204,6 +209,119 @@ function handleRequest(request) {
       ],
     };
   }
+
+  if (current_intent === "FlightPlan") {
+
+    const sessionAttributes = request.sessionState?.sessionAttributes || {};
+    const intentSlots = request.sessionState?.intent?.slots || {};
+    const SelectPlan = request.sessionState?.intent?.slots?.SelectPlan?.value?.interpretedValue;
+
+     if (SelectPlan) {
+      return {
+        sessionState: {
+          sessionAttributes,
+          dialogAction: {
+            type: "Close"
+          },
+          intent: {
+            name: "FlightPlan",
+            state: "Fulfilled",
+            slots: intentSlots
+          }
+        },
+        messages: [
+          {
+            contentType: "PlainText",
+            content: `Plan option ${SelectPlan} successfully selected!`
+          }
+        ]
+      }
+    }
+
+    const template = {
+      "templateType": "Carousel",
+      "version": "1.0",
+      "data": {
+        "content": {
+          "title": "View our popular destinations",
+          "elements": [
+            {
+              "templateIdentifier": "template0",
+              "templateType": "Panel",
+              "version": "1.0",
+              "data": {
+                "content": {
+                  "title": "California",
+                  "subtitle": "Tap to select option",
+                  "elements": [
+                    {
+                      "title": "Book flights"
+                    },
+                    {
+                      "title": "Book hotels"
+                    },
+                    {
+                      "title": "Talk to agent"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "templateIdentifier": "template1",
+              "templateType": "Panel",
+              "version": "1.0",
+              "data": {
+                "content": {
+                  "title": "New York",
+                  "subtitle": "Tap to select option",
+                  "elements": [
+                    {
+                      "title": "Book flights"
+                    },
+                    {
+                      "title": "Book hotels"
+                    },
+                    {
+                      "title": "Talk to agent"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    const slotToElicit = "SelectPlan";
+
+    return {
+      sessionState: {
+        sessionAttributes,
+        dialogAction: {
+          type: "ElicitSlot",
+          slotToElicit,
+        },
+        intent: {
+          name: "FlightPlan",
+          state: "InProgress",
+          slots: intentSlots,
+          confirmationState: "None",
+        },
+      },
+      messages: [
+        {
+          contentType: "CustomPayload",
+          content: JSON.stringify(template),
+        },
+      ],
+    };
+
+
+  }
+
+
 
   // Se o input for um pedido de ajuda ou o início da intenção Help
   if (current_intent === 'Help' || input.toLowerCase() === 'help') {
